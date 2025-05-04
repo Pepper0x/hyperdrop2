@@ -1,182 +1,31 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Tetris Lock + Respawn</title>
-  <style>
-    canvas { background: #ddd; border: 2px solid black; }
-  </style>
+  <meta charset="UTF-8" />
+  <title>Hyperdrop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <button id="startBtn">Start Game</button>
-  <canvas id="canvas" width="200" height="400"></canvas>
-
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const blockSize = 20;
-    const cols = 10;
-    const rows = 20;
-
-    let running = false;
-    let piece = null;
-    let board = Array.from({ length: rows }, () => Array(cols).fill(null));
-
-    const PIECES = [
-      {
-        color: "cyan",
-        rotations: [
-          [ [0,1], [1,1], [2,1], [3,1] ],
-          [ [2,0], [2,1], [2,2], [2,3] ],
-          [ [0,2], [1,2], [2,2], [3,2] ],
-          [ [1,0], [1,1], [1,2], [1,3] ]
-        ]
-      },
-      {
-        color: "purple",
-        rotations: [
-          [ [1,0], [0,1], [1,1], [2,1] ],
-          [ [1,0], [1,1], [1,2], [0,1] ],
-          [ [0,1], [1,1], [2,1], [1,2] ],
-          [ [1,0], [1,1], [1,2], [2,1] ]
-        ]
-      }
-    ];
-
-    function createPiece() {
-      const type = PIECES[Math.floor(Math.random() * PIECES.length)];
-      return { x: 3, y: 0, rotation: 0, type: type };
-    }
-
-    function drawBlock(x, y, color) {
-      ctx.fillStyle = color;
-      ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
-      ctx.strokeStyle = "#000";
-      ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
-    }
-
-    
-function drawPiece(p) {
-  const blocks = p.type.rotations[p.rotation];
-  for (const [dx, dy] of blocks) {
-    const x = p.x + dx;
-    const y = Math.floor(p.y + dy);
-    if (x >= 0 && x < cols && y >= 0 && y < rows) {
-      drawBlock(x, y, p.type.color);
-    }
-  }
-
-      const blocks = p.type.rotations[p.rotation];
-      for (const [dx, dy] of blocks) {
-        drawBlock(p.x + dx, p.y + dy, p.type.color);
-      }
-    }
-
-    function drawBoard() {
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          if (board[y][x]) drawBlock(x, y, board[y][x]);
-        }
-      }
-    }
-
-    function movePiece(dx, dy) {
-      piece.x += dx;
-      piece.y += dy;
-    }
-
-    function rotatePiece() {
-      piece.rotation = (piece.rotation + 1) % 4;
-    }
-
-    function run() {
-      console.log("[run] called");
-      let last = performance.now();
-
-      function frame(now) {
-        if (!running) return;
-        let dt = (now - last) / 1000;
-        last = now;
-
-        update(dt);
-        draw();
-
-        requestAnimationFrame(frame);
-      }
-
-      requestAnimationFrame(frame);
-    }
-
-    
-
-function update(dt) {
-  piece.y += dt * 2;
-
-  if (checkCollision(piece)) {
-    piece.y = Math.floor(piece.y);
-    lockPiece(piece);
-    piece = createPiece();
-  }
-}
-
-
-      piece.y += dt * 2;
-      if (checkCollision(piece)) {
-        piece.y = Math.floor(piece.y);
-        lockPiece(piece);
-        piece = createPiece();
-      }
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawBoard();
-      drawPiece(piece);
-    }
-
-    function lockPiece(p) {
-      const blocks = p.type.rotations[p.rotation];
-      for (const [dx, dy] of blocks) {
-        const x = p.x + dx;
-        const y = Math.floor(p.y + dy);
-        if (y >= 0 && y < rows && x >= 0 && x < cols) {
-          board[y][x] = p.type.color;
-        }
-      }
-    }
-
-    function checkCollision(p) {
-      const blocks = p.type.rotations[p.rotation];
-      for (const [dx, dy] of blocks) {
-        const x = p.x + dx;
-        const y = Math.floor(p.y + dy);
-        if (y >= rows || (y >= 0 && board[y][x])) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (!piece) return;
-      switch (e.key) {
-        case "ArrowLeft": movePiece(-1, 0); break;
-        case "ArrowRight": movePiece(1, 0); break;
-        case "ArrowUp": rotatePiece(); break;
-      }
-    });
-
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log("[DOMContentLoaded]");
-      document.getElementById("startBtn").addEventListener("click", () => {
-        console.log("[Start Game clicked]");
-        running = true;
-        piece = createPiece();
-        run();
-      });
-    });
-  </script>
-
+  <div class="game-wrapper">
+    <div id="startScreen" class="overlay">
+      <h1>Hyperdrop</h1>
+      <input type="text" id="playerName" placeholder="Enter your name" />
+      <button id="startBtn">Start Game</button>
+      <button id="viewLeaderboardBtn">View Leaderboard</button>
+    </div>
+    <div id="leaderboardScreen" class="overlay" style="display:none;">
+      <h2>Leaderboard</h2>
+      <ol id="leaderboardList"></ol>
+      <button onclick="closeLeaderboard()">Back</button>
+    </div>
+    <canvas id="game" width="300" height="600"></canvas>
+    <div id="scoreboard">
+      <span id="score">Score: 0</span>
+      <span id="level">Level: 1</span>
+    </div>
+  </div>
+  <script src="game.js"></script>
 </body>
 </html>
