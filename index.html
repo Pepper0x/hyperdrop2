@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tetris T-Piece Movement</title>
+  <title>Tetris Lock + Respawn</title>
   <style>
     canvas { background: #ddd; border: 2px solid black; }
   </style>
@@ -21,24 +21,32 @@
 
     let running = false;
     let piece = null;
+    let board = Array.from({ length: rows }, () => Array(cols).fill(null));
 
-    const T_PIECE = {
-      color: "purple",
-      rotations: [
-        [ [1,0], [0,1], [1,1], [2,1] ],
-        [ [1,0], [1,1], [1,2], [0,1] ],
-        [ [0,1], [1,1], [2,1], [1,2] ],
-        [ [1,0], [1,1], [1,2], [2,1] ]
-      ]
-    };
+    const PIECES = [
+      {
+        color: "cyan",
+        rotations: [
+          [ [0,1], [1,1], [2,1], [3,1] ],
+          [ [2,0], [2,1], [2,2], [2,3] ],
+          [ [0,2], [1,2], [2,2], [3,2] ],
+          [ [1,0], [1,1], [1,2], [1,3] ]
+        ]
+      },
+      {
+        color: "purple",
+        rotations: [
+          [ [1,0], [0,1], [1,1], [2,1] ],
+          [ [1,0], [1,1], [1,2], [0,1] ],
+          [ [0,1], [1,1], [2,1], [1,2] ],
+          [ [1,0], [1,1], [1,2], [2,1] ]
+        ]
+      }
+    ];
 
-    function createPiece(type) {
-      return {
-        x: 3,
-        y: 0,
-        rotation: 0,
-        type: type
-      };
+    function createPiece() {
+      const type = PIECES[Math.floor(Math.random() * PIECES.length)];
+      return { x: 3, y: 0, rotation: 0, type: type };
     }
 
     function drawBlock(x, y, color) {
@@ -52,6 +60,14 @@
       const blocks = p.type.rotations[p.rotation];
       for (const [dx, dy] of blocks) {
         drawBlock(p.x + dx, p.y + dy, p.type.color);
+      }
+    }
+
+    function drawBoard() {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (board[y][x]) drawBlock(x, y, board[y][x]);
+        }
       }
     }
 
@@ -83,15 +99,41 @@
     }
 
     function update(dt) {
-      piece.y += dt * 2; // falling speed
-      if (piece.y > rows - 3) {
-        piece.y = rows - 3; // stop at bottom
+      piece.y += dt * 2;
+      if (checkCollision(piece)) {
+        piece.y = Math.floor(piece.y);
+        lockPiece(piece);
+        piece = createPiece();
       }
     }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBoard();
       drawPiece(piece);
+    }
+
+    function lockPiece(p) {
+      const blocks = p.type.rotations[p.rotation];
+      for (const [dx, dy] of blocks) {
+        const x = p.x + dx;
+        const y = Math.floor(p.y + dy);
+        if (y >= 0 && y < rows && x >= 0 && x < cols) {
+          board[y][x] = p.type.color;
+        }
+      }
+    }
+
+    function checkCollision(p) {
+      const blocks = p.type.rotations[p.rotation];
+      for (const [dx, dy] of blocks) {
+        const x = p.x + dx;
+        const y = Math.floor(p.y + dy);
+        if (y >= rows || (y >= 0 && board[y][x])) {
+          return true;
+        }
+      }
+      return false;
     }
 
     document.addEventListener("keydown", (e) => {
@@ -108,7 +150,7 @@
       document.getElementById("startBtn").addEventListener("click", () => {
         console.log("[Start Game clicked]");
         running = true;
-        piece = createPiece(T_PIECE);
+        piece = createPiece();
         run();
       });
     });
