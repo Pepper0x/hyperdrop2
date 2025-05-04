@@ -56,7 +56,17 @@
       ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
     }
 
-    function drawPiece(p) {
+    
+function drawPiece(p) {
+  const blocks = p.type.rotations[p.rotation];
+  for (const [dx, dy] of blocks) {
+    const x = p.x + dx;
+    const y = Math.floor(p.y + dy);
+    if (x >= 0 && x < cols && y >= 0 && y < rows) {
+      drawBlock(x, y, p.type.color);
+    }
+  }
+
       const blocks = p.type.rotations[p.rotation];
       for (const [dx, dy] of blocks) {
         drawBlock(p.x + dx, p.y + dy, p.type.color);
@@ -98,7 +108,16 @@
       requestAnimationFrame(frame);
     }
 
-    function update(dt) {
+    
+function update(dt) {
+  piece.y += dt * 2;
+  piece.y = Math.min(piece.y, rows - 4); // prevent falling too far visually
+  if (checkCollision(piece)) {
+    piece.y = Math.floor(piece.y);
+    lockPiece(piece);
+    piece = createPiece();
+  }
+
       piece.y += dt * 2;
       if (checkCollision(piece)) {
         piece.y = Math.floor(piece.y);
