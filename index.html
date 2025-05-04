@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tetris Loop Test</title>
+  <title>Tetris Block Drop Test</title>
   <style>
     canvas { background: #ddd; border: 2px solid black; }
   </style>
@@ -13,9 +13,19 @@
   <canvas id="canvas" width="200" height="400"></canvas>
 
   <script>
-    let canvas = document.getElementById("canvas");
-    let ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const blockSize = 20;
+
     let running = false;
+    let blockY = 0;
+
+    function drawBlock(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, blockSize, blockSize);
+      ctx.strokeStyle = "#000";
+      ctx.strokeRect(x, y, blockSize, blockSize);
+    }
 
     function run() {
       console.log("[run] called");
@@ -36,13 +46,16 @@
     }
 
     function update(dt) {
-      console.log("[update]", dt.toFixed(3));
+      blockY += 50 * dt; // pixels per second
+      console.log("[update] blockY =", blockY.toFixed(2));
+      if (blockY > canvas.height - blockSize) {
+        blockY = canvas.height - blockSize; // stop at bottom
+      }
     }
 
     function draw() {
-      console.log("[draw]");
-      ctx.fillStyle = "black";
-      ctx.fillRect(Math.random() * 200, Math.random() * 400, 5, 5);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBlock(80, blockY, "cyan");
     }
 
     document.addEventListener("DOMContentLoaded", () => {
