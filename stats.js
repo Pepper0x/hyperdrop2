@@ -1,1 +1,0 @@
-function Stats(){this.domElement=document.createElement("div");this.update=function(){};}
