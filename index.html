@@ -109,14 +109,17 @@ function drawPiece(p) {
     }
 
     
+
 function update(dt) {
   piece.y += dt * 2;
-  piece.y = Math.min(piece.y, rows - 4); // prevent falling too far visually
+
   if (checkCollision(piece)) {
     piece.y = Math.floor(piece.y);
     lockPiece(piece);
     piece = createPiece();
   }
+}
+
 
       piece.y += dt * 2;
       if (checkCollision(piece)) {
